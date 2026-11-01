@@ -12,3 +12,8 @@ export interface LoginResponse {
   token: string;
   user: User;
 }
+
+// What POST /auth/guest-email returns. Guests get no token
+export interface GuestEmailResponse {
+  user: User;
+}

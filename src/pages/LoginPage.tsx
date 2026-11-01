@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "../components/Button";
 import { Input } from "../components/Input";
-import { login } from "../api/auth";
+import { login, signInGuest } from "../api/auth";
 
 // "choose" shows the two buttons. "guest" and "host" show the email step for that role
 type Step = "choose" | "guest" | "host";
@@ -17,18 +17,23 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit() {
-    setLoading(true);
-    setError(null);
-    try {
-        const result = await login(email, password);
-        localStorage.setItem("authToken", result.token);
-        alert(`Signed in as ${result.user.email}`);
-    } catch {
-        setError("Invalid email or password");
-    } finally {
-        setLoading(false);
+  setLoading(true);
+  setError(null);
+  try {
+    if (isHost) {
+      const result = await login(email, password);
+      localStorage.setItem("authToken", result.token);
+      alert(`Signed in as host ${result.user.email}`);
+    } else {
+      const result = await signInGuest(email);
+      alert(`Welcome, guest ${result.user.email}`);
     }
-    }
+  } catch {
+    setError("Something went wrong. Check your details and try again");
+  } finally {
+    setLoading(false);
+  }
+}
 
   if (step === "choose") {
     return (

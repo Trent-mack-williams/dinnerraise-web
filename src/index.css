@@ -51,6 +51,9 @@ body {
 .btn-secondary { background: #fff; color: #1a1a1a; border: 1px solid #1a1a1a; }
 .btn:disabled { background: var(--disabled-bg); color: var(--disabled-text); border-color: var(--disabled-bg); cursor: not-allowed; }
 
+.event-card { border: 1px solid var(--border-color); border-radius: 4px; padding: var(--spacing-md); margin-bottom: var(--spacing-md); }
+.event-card h2 { margin-bottom: 4px; }
+
 @media (min-width: 1280px) {
   .page { max-width: 480px; }
 }

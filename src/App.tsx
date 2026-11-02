@@ -1,11 +1,14 @@
-import { LoginPage } from "./pages/LoginPage";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { EventListPage } from "./pages/EventListPage";
-
-// export default function App() {
-//   return <LoginPage />;
-// }
-
+import { EventDetailPage } from "./pages/EventDetailPage";
 
 export default function App() {
-  return <EventListPage />;
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<EventListPage />} />
+        <Route path="/events/:id" element={<EventDetailPage />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }

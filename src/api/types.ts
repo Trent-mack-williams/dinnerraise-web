@@ -37,3 +37,17 @@ export interface Event {
 export interface EventsResponse {
   events: Event[];
 }
+
+export interface Seat {
+  id: string;
+  eventId: string;
+  guestEmail: string;
+  guestName: string;
+  status: "PENDING" | "AWAITING_PAYMENT" | "CONFIRMED" | "DECLINED" | "CANCELLED";
+  dietaryRestrictions: string[];
+}
+
+// What POST /events/:id/seats returns
+export interface SeatRequestResponse {
+  seat: Seat;
+}

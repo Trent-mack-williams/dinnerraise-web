@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getEvents } from "../api/events";
 import type { Event } from "../api/types";
+import { Link } from "react-router-dom";
 
 type LoadState =
   | { status: "loading" }
@@ -39,7 +40,7 @@ export function EventListPage() {
           </p>
           <p>£{(event.seatPriceCents / 100).toFixed(2)} per seat</p>
           <p className="help-text">{event.seatsRemaining} seats remaining</p>
-          <button className="btn btn-secondary">View dinner</button>
+          <Link to={`/events/${event.id}`} className="btn btn-secondary">View dinner</Link>
         </article>
       ))}
     </main>

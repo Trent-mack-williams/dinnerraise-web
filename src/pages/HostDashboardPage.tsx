@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getMyEvents, updateSeatStatus } from "../api/host";
+import { getErrorMessage } from "../api/errors";
 import { Button } from "../components/Button";
+import { CreateEventForm } from "../components/CreateEventForm";
 import type { HostEvent } from "../api/types";
-import axios from "axios";
 
 type LoadState =
   | { status: "loading" }
@@ -13,8 +14,9 @@ type LoadState =
 export function HostDashboardPage() {
   const navigate = useNavigate();
   const [state, setState] = useState<LoadState>({ status: "loading" });
+  // Errors from approve, decline or create. Shown above the list, not instead of it
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  // Loads the events. Called on open and again after each approve or decline
   function load() {
     getMyEvents()
       .then((data) => setState({ status: "loaded", events: data.events }))
@@ -22,7 +24,6 @@ export function HostDashboardPage() {
   }
 
   useEffect(() => {
-    // No saved token means nobody is signed in as a host
     if (!localStorage.getItem("authToken")) {
       navigate("/");
       return;
@@ -31,15 +32,12 @@ export function HostDashboardPage() {
   }, [navigate]);
 
   async function handleDecision(seatId: string, decision: "CONFIRMED" | "DECLINED") {
+    setActionError(null);
     try {
       await updateSeatStatus(seatId, decision);
       load();
     } catch (err) {
-      // Axios puts the server's error text in err.response.data.error
-      const message = axios.isAxiosError(err) && err.response?.data?.error
-        ? err.response.data.error
-        : "That change didn't save. Try again.";
-      setState({ status: "error", message });
+      setActionError(getErrorMessage(err, "That change didn't save. Try again."));
     }
   }
 
@@ -53,10 +51,14 @@ export function HostDashboardPage() {
   return (
     <main className="page">
       <h1>Your dinners</h1>
+
+      <CreateEventForm onCreated={load} />
+
+      {actionError && <p className="help-text">{actionError}</p>}
+
       {state.events.length === 0 && <p>You haven't created any dinners yet.</p>}
 
       {state.events.map((event) => {
-        // Pending requests need a decision. Confirmed or awaiting-payment seats are just listed
         const pending = event.seats.filter((s) => s.status === "PENDING");
         const booked = event.seats.filter(
           (s) => s.status === "AWAITING_PAYMENT" || s.status === "CONFIRMED",

@@ -65,3 +65,20 @@ export interface HostSeat {
 export interface HostEvent extends Event {
   seats: HostSeat[];
 }
+
+// What POST /events expects. Money is in pence, dates are ISO text
+export interface CreateEventInput {
+  title: string;
+  location: string;
+  startsAt: string;
+  seatPriceCents: number;
+  capacity: number;
+  isPrivate: boolean;
+  cause?: string;
+  description?: string;
+}
+
+// What POST /events returns
+export interface CreateEventResponse {
+  event: Event;
+}

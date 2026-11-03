@@ -51,3 +51,17 @@ export interface Seat {
 export interface SeatRequestResponse {
   seat: Seat;
 }
+
+// A seat as shown on the host dashboard
+export interface HostSeat {
+  id: string;
+  guestName: string;
+  guestEmail: string;
+  dietaryRestrictions: string[];
+  status: "PENDING" | "AWAITING_PAYMENT" | "CONFIRMED" | "DECLINED" | "CANCELLED";
+}
+
+// An event as the host sees it, with its seats
+export interface HostEvent extends Event {
+  seats: HostSeat[];
+}

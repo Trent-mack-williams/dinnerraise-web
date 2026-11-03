@@ -54,6 +54,9 @@ body {
 .event-card { border: 1px solid var(--border-color); border-radius: 4px; padding: var(--spacing-md); margin-bottom: var(--spacing-md); }
 .event-card h2 { margin-bottom: 4px; }
 
+.seat-row { border-top: 1px solid var(--border-color); padding: var(--spacing-sm) 0; }
+.status-badge { margin-left: 8px; font-size: 12px; border: 1px solid #1a1a1a; padding: 2px 6px; border-radius: 4px; }
+
 @media (min-width: 1280px) {
   .page { max-width: 480px; }
 }

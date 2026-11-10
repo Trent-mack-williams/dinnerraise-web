@@ -59,6 +59,10 @@ body {
 
 .checkbox-row { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; margin-bottom: var(--spacing-md); }
 
+.invite-box { border-top: 1px dashed var(--border-color); margin-top: var(--spacing-md); padding-top: var(--spacing-md); }
+.invite-result { margin-top: var(--spacing-md); }
+.link-text { font-size: 12px; word-break: break-all; background: var(--bg-secondary); padding: var(--spacing-sm); border-radius: 4px; }
+
 @media (min-width: 1280px) {
   .page { max-width: 480px; }
 }

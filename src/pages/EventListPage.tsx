@@ -30,6 +30,7 @@ export function EventListPage() {
   return (
     <main className="page">
       <h1>Upcoming dinners</h1>
+      <p className="help-text"><Link to="/login">Host sign in</Link></p>
       {state.events.length === 0 && <p>No dinners are scheduled yet. Check back soon.</p>}
       {state.events.map((event) => (
         <article key={event.id} className="event-card">

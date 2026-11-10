@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "../components/Button";
 import { Input } from "../components/Input";
 import { login, signInGuest } from "../api/auth";
+import { Link } from "react-router-dom";
 
 // "choose" shows the two buttons. "guest" and "host" show the email step for that role
 type Step = "choose" | "guest" | "host";
@@ -54,9 +55,6 @@ export function LoginPage() {
 
   return (
     <main className="page">
-      <Button variant="secondary" onClick={() => setStep("choose")}>
-        Back
-      </Button>
       <h1>{isHost ? "Host sign in" : "Guest sign in"}</h1>
 
       <Input
@@ -83,6 +81,10 @@ export function LoginPage() {
       <Button onClick={handleSubmit} disabled={loading || !emailValid || (isHost && password.length < 8)}>
         {loading ? "Signing in..." : isHost ? "Sign in as host" : "Continue as guest"}
       </Button>
+      <Button variant="secondary" onClick={() => setStep("choose")}>
+        Back
+      </Button>
+      <p className="help-text"><Link to="/eventlist">See events</Link></p>
     </main>
   );
 }

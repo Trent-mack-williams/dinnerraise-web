@@ -31,6 +31,7 @@ export interface Event {
   capacity: number;
   createdAt: string;
   seatsRemaining: number;
+  isPrivate: boolean;
 }
 
 // What GET /events returns
@@ -81,4 +82,34 @@ export interface CreateEventInput {
 // What POST /events returns
 export interface CreateEventResponse {
   event: Event;
+}
+
+// What POST /events/:id/invitations expects
+export interface CreateInvitationInput {
+  guestEmail: string;
+}
+
+// What POST /events/:id/invitations returns. The link is the URL the host shares
+export interface CreateInvitationResponse {
+  invitation: {
+    id: string;
+    guestEmail: string;
+    token: string;
+    link: string;
+  };
+}
+
+// What GET /seats/:seatId returns
+export interface SeatStatusResponse {
+  seat: {
+    id: string;
+    eventId: string;
+    guestName: string;
+    status: Seat["status"];
+  };
+}
+
+// What POST /payments/checkout/:seatId returns
+export interface CheckoutResponse {
+  url: string;
 }

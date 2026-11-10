@@ -1,20 +1,35 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { getEvent, requestSeat } from "../api/events";
+import { createCheckout, getSeat } from "../api/seats";
+import { getErrorMessage } from "../api/errors";
 import { Button } from "../components/Button";
 import { Input } from "../components/Input";
-import type { Event as DinnerEvent } from "../api/types";
+import type { Event as DinnerEvent, Seat } from "../api/types";
 
 type LoadState =
   | { status: "loading" }
   | { status: "error"; message: string }
   | { status: "loaded"; event: DinnerEvent };
-type RequestState = "idle" | "sending" | "sent" | "failed";
+
+type RequestState = "idle" | "sending" | "failed";
+
+// One localStorage key per dinner, so requests for different dinners don't overwrite each other
+function savedSeatKey(eventId: string) {
+  return `dinnerraise:seat:${eventId}`;
+}
+
+// Plain-language message for each status a guest can see
+const statusMessage: Record<Seat["status"], string> = {
+  PENDING: "Your request is with the host. Come back to this page once it's approved to pay.",
+  AWAITING_PAYMENT: "The host has approved your seat. Pay now to confirm it.",
+  CONFIRMED: "Your seat is confirmed. See you at the dinner.",
+  DECLINED: "The host couldn't offer you a seat this time.",
+  CANCELLED: "This seat was cancelled.",
+};
 
 export function EventDetailPage() {
-  // useParams reads :id from the URL. Its type is string | undefined
   const { id } = useParams();
-  // useSearchParams reads ?invite=... from the URL
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get("invite") ?? undefined;
 
@@ -23,8 +38,13 @@ export function EventDetailPage() {
   const [guestEmail, setGuestEmail] = useState("");
   const [requestState, setRequestState] = useState<RequestState>("idle");
 
+  // The guest's saved seat, if they've requested one for this dinner
+  const [seatId, setSeatId] = useState<string | null>(null);
+  const [seatStatus, setSeatStatus] = useState<Seat["status"] | null>(null);
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
+
   useEffect(() => {
-    // Guard: if the URL has no id, there's nothing to load
     if (!id) {
       setState({ status: "error", message: "This dinner link is incomplete." });
       return;
@@ -33,6 +53,23 @@ export function EventDetailPage() {
       .then((data) => setState({ status: "loaded", event: data.event }))
       .catch(() => setState({ status: "error", message: "This dinner isn't available." }));
   }, [id, inviteToken]);
+
+  // On opening the page, look for a seat this browser saved earlier and check its status
+  useEffect(() => {
+    if (!id) return;
+    const saved = localStorage.getItem(savedSeatKey(id));
+    if (!saved) return;
+
+    getSeat(saved)
+      .then((data) => {
+        setSeatId(saved);
+        setSeatStatus(data.seat.status);
+      })
+      .catch(() => {
+        // The seat no longer exists, so forget it
+        localStorage.removeItem(savedSeatKey(id));
+      });
+  }, [id]);
 
   if (state.status === "loading") {
     return <main className="page"><p>Loading dinner...</p></main>;
@@ -49,10 +86,32 @@ export function EventDetailPage() {
     if (!id) return;
     setRequestState("sending");
     try {
-      await requestSeat(id, { guestName, guestEmail, dietaryRestrictions: [] });
-      setRequestState("sent");
+      const response = await requestSeat(id, {
+        guestName,
+        guestEmail,
+        dietaryRestrictions: [],
+      });
+      // Save the seat so the guest can come back to it later
+      localStorage.setItem(savedSeatKey(id), response.seat.id);
+      setSeatId(response.seat.id);
+      setSeatStatus(response.seat.status);
+      setRequestState("idle");
     } catch {
       setRequestState("failed");
+    }
+  }
+
+  async function handlePay() {
+    if (!seatId) return;
+    setPaying(true);
+    setPayError(null);
+    try {
+      const result = await createCheckout(seatId);
+      // Send the guest to Stripe's hosted payment page
+      window.location.href = result.url;
+    } catch (err) {
+      setPayError(getErrorMessage(err, "We couldn't start payment. Try again."));
+      setPaying(false);
     }
   }
 
@@ -66,8 +125,19 @@ export function EventDetailPage() {
       <p>£{(event.seatPriceCents / 100).toFixed(2)} per seat</p>
       <p className="help-text">{event.seatsRemaining} seats remaining</p>
 
-      {requestState === "sent" ? (
-        <p>Request sent. The host will review it and email you.</p>
+      {seatId && seatStatus ? (
+        <section className="event-card">
+          <h2>Your seat</h2>
+          <p>{statusMessage[seatStatus]}</p>
+          {seatStatus === "AWAITING_PAYMENT" && (
+            <>
+              <Button onClick={handlePay} disabled={paying}>
+                {paying ? "Opening payment..." : "Pay now"}
+              </Button>
+              {payError && <p className="help-text">{payError}</p>}
+            </>
+          )}
+        </section>
       ) : (
         <>
           <h2>Request a seat</h2>

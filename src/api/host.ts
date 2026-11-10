@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import type { HostEvent, CreateEventInput, CreateEventResponse } from "./types";
+import type { HostEvent, CreateEventInput, CreateEventResponse, CreateInvitationInput, CreateInvitationResponse } from "./types";
 
 
 // Loads the logged-in host's events and their seats
@@ -17,5 +17,17 @@ export async function updateSeatStatus(seatId: string, status: "CONFIRMED" | "DE
 // Creates a new event for the logged-in host
 export async function createEvent(input: CreateEventInput): Promise<CreateEventResponse> {
   const response = await apiClient.post<CreateEventResponse>("/events", input);
+  return response.data;
+}
+
+// Creates a single-use invite for one guest. Returns the link to share
+export async function createInvitation(
+  eventId: string,
+  input: CreateInvitationInput,
+): Promise<CreateInvitationResponse> {
+  const response = await apiClient.post<CreateInvitationResponse>(
+    `/events/${eventId}/invitations`,
+    input,
+  );
   return response.data;
 }

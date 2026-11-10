@@ -5,11 +5,13 @@ import { getErrorMessage } from "../api/errors";
 import { Button } from "../components/Button";
 import { CreateEventForm } from "../components/CreateEventForm";
 import type { HostEvent } from "../api/types";
+import { InviteForm } from "../components/InviteForm";
 
 type LoadState =
   | { status: "loading" }
   | { status: "error"; message: string }
   | { status: "loaded"; events: HostEvent[] };
+  
 
 export function HostDashboardPage() {
   const navigate = useNavigate();
@@ -95,7 +97,7 @@ export function HostDashboardPage() {
                 {seat.guestName}, {seat.status === "CONFIRMED" ? "paid" : "awaiting payment"}
               </p>
             ))}
-
+            {event.isPrivate && <InviteForm eventId={event.id} />}
             <Link to={`/events/${event.id}`}>View public page</Link>
           </article>
         );

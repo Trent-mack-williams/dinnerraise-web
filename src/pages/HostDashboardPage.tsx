@@ -6,6 +6,7 @@ import { Button } from "../components/Button";
 import { CreateEventForm } from "../components/CreateEventForm";
 import type { HostEvent } from "../api/types";
 import { InviteForm } from "../components/InviteForm";
+import { clearSession, isHostSignedIn } from "../api/session";
 
 type LoadState =
   | { status: "loading" }
@@ -26,8 +27,9 @@ export function HostDashboardPage() {
   }
 
   useEffect(() => {
-    if (!localStorage.getItem("authToken")) {
-      navigate("/");
+    if (!isHostSignedIn()) {
+      clearSession();
+      navigate("/login");
       return;
     }
     load();

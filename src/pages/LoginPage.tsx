@@ -24,9 +24,12 @@ export function LoginPage() {
     if (isHost) {
       const result = await login(email, password);
       localStorage.setItem("authToken", result.token);
+      localStorage.setItem("authRole", result.user.role);
       alert(`Signed in as host ${result.user.email}`);
     } else {
       const result = await signInGuest(email);
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("authRole");
       alert(`Welcome, guest ${result.user.email}`);
     }
   } catch {

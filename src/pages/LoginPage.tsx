@@ -3,6 +3,7 @@ import { Button } from "../components/Button";
 import { Input } from "../components/Input";
 import { login, signInGuest } from "../api/auth";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // "choose" shows the two buttons. "guest" and "host" show the email step for that role
 type Step = "choose" | "guest" | "host";
@@ -16,6 +17,7 @@ export function LoginPage() {
   const emailValid = /^\S+@\S+\.\S+$/.test(email);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   async function handleSubmit() {
   setLoading(true);
@@ -26,6 +28,7 @@ export function LoginPage() {
       localStorage.setItem("authToken", result.token);
       localStorage.setItem("authRole", result.user.role);
       alert(`Signed in as host ${result.user.email}`);
+      navigate("/host");
     } else {
       const result = await signInGuest(email);
       localStorage.removeItem("authToken");

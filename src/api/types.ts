@@ -113,3 +113,9 @@ export interface SeatStatusResponse {
 export interface CheckoutResponse {
   url: string;
 }
+
+// What POST /invitations/:token/confirm returns
+export interface InviteConfirmResponse {
+  seat: Seat & { title: string; seatPriceCents: number };
+  checkoutUrl: string;
+}

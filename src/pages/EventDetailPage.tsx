@@ -6,6 +6,7 @@ import { getErrorMessage } from "../api/errors";
 import { Button } from "../components/Button";
 import { Input } from "../components/Input";
 import type { Event as DinnerEvent, Seat } from "../api/types";
+import { confirmInvitation } from "../api/invitations";
 
 type LoadState =
   | { status: "loading" }
@@ -43,6 +44,9 @@ export function EventDetailPage() {
   const [seatStatus, setSeatStatus] = useState<Seat["status"] | null>(null);
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
+  const [inviteName, setInviteName] = useState("");
+  const [inviteSending, setInviteSending] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) {
@@ -115,6 +119,20 @@ export function EventDetailPage() {
     }
   }
 
+  async function handleInviteConfirm() {
+    if (!inviteToken) return;
+    setInviteSending(true);
+    setInviteError(null);
+    try {
+      const result = await confirmInvitation(inviteToken, inviteName.trim());
+      // The seat now awaits payment. Send the guest straight to Stripe
+      window.location.href = result.checkoutUrl;
+    } catch (err) {
+      setInviteError(getErrorMessage(err, "This invitation couldn't be confirmed."));
+      setInviteSending(false);
+    }
+  }
+
   return (
     <main className="page">
       <h1>{event.title}</h1>
@@ -137,6 +155,19 @@ export function EventDetailPage() {
               {payError && <p className="help-text">{payError}</p>}
             </>
           )}
+        </section>
+      ) : inviteToken ? (
+        <section className="event-card">
+          <h2>You're invited</h2>
+          <p className="help-text">Enter your name to reserve your seat, then pay.</p>
+          <Input id="inviteName" label="Your name" value={inviteName}
+            onChange={(e) => setInviteName(e.target.value)} />
+          {inviteError && <p className="help-text">{inviteError}</p>}
+          {/* Disabled until a name is entered */}
+          <Button onClick={handleInviteConfirm}
+            disabled={inviteName.trim().length === 0 || inviteSending}>
+            {inviteSending ? "Opening payment..." : "Confirm and pay"}
+          </Button>
         </section>
       ) : (
         <>
